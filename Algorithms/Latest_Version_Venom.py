@@ -129,26 +129,26 @@ class SnakeVenom:
             print(f"Infected nodes:{self.infected_nodes}\n"
                   f"Infected files:{self.infected_files}\n")
 
-            # if self.file_limit is not None:
-            #     for limit in self.file_limit:
-            #         if limit not in self.logged_limits and file_limit_reached(self.infected_files, limit):
-            #             self.logged_limits.append(limit)
-            #             print(f"Logged Limits: {self.logged_limits}\n"
-            #                   f"I'm Here Processing")
-            #             path = reconstruct_path(self.parent_map, self.starting_path, current_dir)
-            #             print(f"Path: {path}")
-            #             results_in_file(
-            #                 path,
-            #                 self.target_found,
-            #                 time.perf_counter() - self.start_time,
-            #                 self.infected_nodes,
-            #                 self.infected_files,
-            #                 "Snake_Venom_Latest_Version",
-            #                 limit
-            #             )
-            #             print("I'm done")
+            if self.file_limit is not None:
+                for limit in self.file_limit:
+                    if limit not in self.logged_limits and file_limit_reached(self.infected_files, limit):
+                        self.logged_limits.append(limit)
+                        print(f"Logged Limits: {self.logged_limits}\n"
+                              f"I'm Here Processing")
+                        path = reconstruct_path(self.parent_map, self.starting_path, current_dir)
+                        print(f"Path: {path}")
+                        results_in_file(
+                            path,
+                            self.target_found,
+                            time.perf_counter() - self.start_time,
+                            self.infected_nodes,
+                            self.infected_files,
+                            "Snake_Venom_Latest_Version",
+                            limit
+                        )
+                        print("I'm done")
 
-            #             break
+                        break
 
             try:
                 if self.target_file in os.listdir(current_dir): # O(Directory Size)
