@@ -1,11 +1,10 @@
 import heapq
 import os
-from datetime import datetime
 from os.path import normpath, abspath, samefile
 from pathlib import Path
 import random
 import time
-from heapq import heapify, heappush, heappop
+from heapq import heapify
 
 from Utils.FileProcessing import FileProcessing
 from Utils.PathingUtil import reconstruct_path
@@ -113,50 +112,50 @@ class SnakeVenom:
 
         # Initialize cost maps
         cost_map = {current_dir: self.diffusion_flux(
-            FileProcessing().count_files_in_directory(os.path.dirname(current_dir)),
-            FileProcessing().count_files_in_directory(ending_dir))}
-        estimated_cost_map = {current_dir: 0}
+            FileProcessing().count_files_in_directory(os.path.dirname(current_dir)), # O(Directory Size)
+            FileProcessing().count_files_in_directory(ending_dir))} # O(Directory Size)
+        estimated_cost_map = {current_dir: 0} # O(1)
 
         # Push starting node to heap
-        heapq.heappush(self.open_nodes, (estimated_cost_map[current_dir], self.counter, current_dir))
+        heapq.heappush(self.open_nodes, (estimated_cost_map[current_dir], self.counter, current_dir)) # O(log n)
         self.counter += 1
-        self.parent_map.update({current_dir: current_dir})
+        self.parent_map.update({current_dir: current_dir}) # O(1)
 
         while self.open_nodes:
             # Get node with lowest estimated cost
-            current_estimated_cost, _, current_dir = heapq.heappop(self.open_nodes)
-            threading.Thread(target=self.toxin_decision_effect).start()
+            current_estimated_cost, _, current_dir = heapq.heappop(self.open_nodes) # O(log n)
+            threading.Thread(target=self.toxin_decision_effect).start() # O(1)
 
             print(f"Infected nodes:{self.infected_nodes}\n"
                   f"Infected files:{self.infected_files}\n")
 
-            if self.file_limit is not None:
-                for limit in self.file_limit:
-                    if limit not in self.logged_limits and file_limit_reached(self.infected_files, limit):
-                        self.logged_limits.append(limit)
-                        print(f"Logged Limits: {self.logged_limits}\n"
-                              f"I'm Here Processing")
-                        path = reconstruct_path(self.parent_map, self.starting_path, current_dir)
-                        print(f"Path: {path}")
-                        results_in_file(
-                            path,
-                            self.target_found,
-                            time.perf_counter() - self.start_time,
-                            self.infected_nodes,
-                            self.infected_files,
-                            "Snake_Venom_Latest_Version",
-                            limit
-                        )
-                        print("I'm done")
+            # if self.file_limit is not None:
+            #     for limit in self.file_limit:
+            #         if limit not in self.logged_limits and file_limit_reached(self.infected_files, limit):
+            #             self.logged_limits.append(limit)
+            #             print(f"Logged Limits: {self.logged_limits}\n"
+            #                   f"I'm Here Processing")
+            #             path = reconstruct_path(self.parent_map, self.starting_path, current_dir)
+            #             print(f"Path: {path}")
+            #             results_in_file(
+            #                 path,
+            #                 self.target_found,
+            #                 time.perf_counter() - self.start_time,
+            #                 self.infected_nodes,
+            #                 self.infected_files,
+            #                 "Snake_Venom_Latest_Version",
+            #                 limit
+            #             )
+            #             print("I'm done")
 
-                        break
+            #             break
 
             try:
-                if self.target_file in os.listdir(current_dir):
+                if self.target_file in os.listdir(current_dir): # O(Directory Size)
                     print(f"Found target file: {self.target_file}")
                     self.target_found = True
 
-                    path = reconstruct_path(self.parent_map, self.starting_path, current_dir)
+                    path = reconstruct_path(self.parent_map, self.starting_path, current_dir) # O(n)
                     results_in_file(
                         path,
                         self.target_found,
@@ -165,7 +164,7 @@ class SnakeVenom:
                         self.infected_files,
                         "Snake_Venom_Latest_Version",
                         self.file_limit
-                    )
+                    ) # O(1)
 
                     return [
                         reconstruct_path(self.parent_map, self.starting_path, current_dir),
@@ -180,15 +179,15 @@ class SnakeVenom:
 
             # Explore subdirectories
             try:
-                next_dirs = FileProcessing().get_all_directories_with_file_counts(current_dir)
+                next_dirs = FileProcessing().get_all_directories_with_file_counts(current_dir) # O(Directory Size)
             except PermissionError:
                 print(f"Access denied to {current_dir}; Skipping...")
                 continue
 
-            self.hemotoxin(current_dir)
+            self.hemotoxin(current_dir) # O(Directory Size)
 
-            if next_dirs:
-                for directory in next_dirs:
+            if next_dirs: 
+                for directory in next_dirs: # O(Directory Size)
                     dir_name = normpath(directory["dir_name"])
                     value = directory["value"]
                     status = directory["status"]
@@ -205,24 +204,24 @@ class SnakeVenom:
                     new_cost = (cost_map[current_dir] +
                                 self.diffusion_flux(
                                     cost_map[current_dir],
-                                    FileProcessing().count_files_in_directory(ending_dir))
+                                    FileProcessing().count_files_in_directory(ending_dir)) # O(Directory Size)
                                 )
                     self.infected_nodes += 1
 
-                    if dir_name not in cost_map or new_cost < cost_map[dir_name]:
+                    if dir_name not in cost_map or new_cost < cost_map[dir_name]: 
                         cost_map[dir_name] = new_cost
                         estimated_cost = (new_cost +
                                           self.diffusion_flux(
                                               cost_map[dir_name],
-                                              FileProcessing().count_files_in_directory(ending_dir))
+                                              FileProcessing().count_files_in_directory(ending_dir)) # O(Directory Size)
                                           )
                         estimated_cost_map[dir_name] = estimated_cost
-                        heapq.heappush(self.open_nodes, (estimated_cost, self.counter, dir_name))
+                        heapq.heappush(self.open_nodes, (estimated_cost, self.counter, dir_name)) # O(log n)
                         self.counter += 1
 
                         # Count infected files
                     try:
-                        for file in os.listdir(dir_name):
+                        for file in os.listdir(dir_name): # O(Directory Size)
                             file_path = os.path.join(dir_name, file)
                             if os.path.isfile(file_path):
                                 self.infected_files += 1
@@ -234,11 +233,11 @@ class SnakeVenom:
             parent_dir = normpath(os.path.dirname(current_dir))
             if parent_dir != current_dir and parent_dir not in self.blocked_directories:
                 print(f"No more Subdirectories, moving up to {parent_dir}")
-                parent_dir_file_count = FileProcessing().count_files_in_directory(parent_dir)
+                parent_dir_file_count = FileProcessing().count_files_in_directory(parent_dir) # O(Directory Size)
 
                 self.parent_map[parent_dir] = current_dir
                 estimated_cost = parent_dir_file_count
-                heapq.heappush(self.open_nodes, (estimated_cost, self.counter, parent_dir))
+                heapq.heappush(self.open_nodes, (estimated_cost, self.counter, parent_dir)) # O(log n)
                 self.counter += 1
                 cost_map[parent_dir] = parent_dir_file_count
 

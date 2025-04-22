@@ -41,9 +41,6 @@ A_STAR = AStar.AStar(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Li
 EBS_AStar = EBS_AStar.EBSAStar(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
 DIJKSTRA = Dijkstra.Dijkstra(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
 
-# TOTAL_FILES = 0
-# TOTAL_NODES = 0
-
 
 
 if __name__ == "__main__":

@@ -55,6 +55,7 @@ def results_in_file(path, path_found, elapsed_time, infected_nodes, infected_fil
 
     print("Done making the File...")
 
+
 '''
 Metrics
 > Power consumption

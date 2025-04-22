@@ -8,7 +8,6 @@ import time
 from heapq import heapify, heappush, heappop
 
 from Utils.FileProcessing import FileProcessing
-from Utils.PathingUtil import reconstruct_path  # We might not need this import anymore
 import threading
 from Utils.PathingUtil import file_limit_reached
 from Utils.Metrics import results_in_file
