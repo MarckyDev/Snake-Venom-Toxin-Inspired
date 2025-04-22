@@ -24,7 +24,7 @@ This algorithm is applied in the context of penetration testing, in which it tra
 
 
 ```
-git pull github_url
+git pull [github_url](https://github.com/MarckyDev/Snake-Venom-Toxin-Inspired.git)
 ```
 
 You may opt-out on using the "-sp" command
