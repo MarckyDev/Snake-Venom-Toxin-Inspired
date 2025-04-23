@@ -1,9 +1,11 @@
+from multiprocessing.pool import RUN
 from Algorithms import First_Version_Venom, Second_Version_Venom, Latest_Version_Venom, Learning_Snake_Venom
 from Algorithms import BFO, AStar, EBS_AStar, Dijkstra
 from Utils.Metrics import time_algorithm
 import os
 import time
 import argparse
+import threading
 
 parser = argparse.ArgumentParser(description="Snake Venom Algorithm")
 
@@ -19,6 +21,11 @@ parser.add_argument("-tp", "--targetpath",
 parser.add_argument("-tf", "--targetfile",
                     help="A target file that must contain a valid filename along and its extension",
                     required=True)
+
+parser.add_argument("-rt", "--runtime",
+                    help="A run time in seconds for each algorithm to run",
+                    type=int,
+                    default=0)
 
 
 def has(target_string: str, required_chars: str) -> bool:
@@ -42,33 +49,16 @@ def has(target_string: str, required_chars: str) -> bool:
 # TARGET_PATH = "C:\\Users\\JiafeiMeifen\\Videos\\TARGET_DIR"
 # TARGET_FILE ="TARGET_FILE.txt"
 
-
-
 arguments = parser.parse_args()
 arguments._get_args()
 
-
-# Constants
-STARTING_PATH = ""
-TARGET_PATH = ""
-TARGET_FILE = ""
-
-file_Limits = [30_000, 60_000, 100_000, 200_000]
-
-SNAKE_VENOM_FIRST = First_Version_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
-SNAKE_VENOM_SECOND = Second_Version_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
-SNAKE_VENOM_LATEST = Latest_Version_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
-SNAKE_VENOM_LEARNING = Learning_Snake_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
-
-BFO = BFO.BacterialForaging(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
-A_STAR = AStar.AStar(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
-EBS_AStar = EBS_AStar.EBSAStar(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
-DIJKSTRA = Dijkstra.Dijkstra(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
-
-
-
 if __name__ == "__main__":
-    print(arguments.startpath)
+    # Constants
+    STARTING_PATH = os.path.dirname(os.path.abspath(__file__))
+    TARGET_PATH = os.path.dirname(os.path.abspath(__file__))
+    TARGET_FILE = "main.py"
+    RUN_TIME = 0
+    
     if arguments.startpath:
         STARTING_PATH = arguments.startpath
         print(f"Current starting path is: {STARTING_PATH}")
@@ -81,9 +71,37 @@ if __name__ == "__main__":
         TARGET_FILE = arguments.targetfile
         print(f"Current target file is: {TARGET_FILE}")
 
-    print("Starting.. EBS A Star")
-    time.sleep(5)
-    ebs_results = time_algorithm(EBS_AStar.ebs_astar)
+    if arguments.runtime:
+        if arguments.runtime != 0:
+            RUN_TIME = arguments.runtime
+            print(f"Current run time is: {RUN_TIME} {"minutes" if RUN_TIME > 1 else "minute"}")
+
+
+    file_Limits = [190_000, 200_000, 390_000, 400_000, 590_000, 600_000]
+
+    SNAKE_VENOM_FIRST = First_Version_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
+    SNAKE_VENOM_SECOND = Second_Version_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
+    SNAKE_VENOM_LATEST = Latest_Version_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
+    SNAKE_VENOM_LEARNING = Learning_Snake_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
+
+    BACTERIA = BFO.BacterialForaging(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
+    A_STAR = AStar.AStar(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
+    EBS = EBS_AStar.EBSAStar(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
+    DIJKSTRA = Dijkstra.Dijkstra(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits)
+
+    if RUN_TIME != 0:
+        SNAKE_VENOM_FIRST.run_time_min = RUN_TIME
+        SNAKE_VENOM_SECOND.run_time_min = RUN_TIME
+        SNAKE_VENOM_LATEST.run_time_min = RUN_TIME
+        SNAKE_VENOM_LEARNING.run_time_min = RUN_TIME
+        A_STAR.run_time_min = RUN_TIME
+        EBS.run_time_min = RUN_TIME
+        DIJKSTRA.run_time_min = RUN_TIME
+        BACTERIA.run_time_min = RUN_TIME
+
+    # print("Starting.. EBS A Star")
+    # time.sleep(5)
+    # ebs_results = time_algorithm(EBS.ebs_astar)
 
     # print("Starting.. First Version of Snake Venom")
     # time.sleep(5)
@@ -109,10 +127,9 @@ if __name__ == "__main__":
     # time.sleep(5)
     # d_results = time_algorithm(DIJKSTRA.dijkstra)
     
-    # print("Starting.. BFO")
-    # time.sleep(5)
-    # b_results = time_algorithm(BFO.run)
+    print("Starting.. BFO")
+    time.sleep(5)
+    b_results = time_algorithm(BACTERIA.run)
 
-    # print(b_results)
 
 

@@ -6,7 +6,7 @@ from datetime import datetime
 import time
 from Utils.FileProcessing import FileProcessing
 from Utils.PathingUtil import reconstruct_path
-from Utils.PathingUtil import file_limit_reached
+from Utils.PathingUtil import file_limit_reached, timer
 from Utils.Metrics import results_in_file
 
 
@@ -33,16 +33,6 @@ class AStar:
         # Timer-related attributes
         self.stop_event = threading.Event()
         self.start_time = time.perf_counter()
-
-    def timer(self):
-        """Monitor elapsed time and set stop_event when time limit is reached"""
-        while not self.stop_event.is_set():
-            elapsed = datetime.now() - self.start_time
-            if elapsed.total_seconds() >= self.run_time_min * 60:
-                self.stop_event.set()
-                print(f"Timeout: Reached {self.run_time_min} minute limit")
-                break
-            time.sleep(1)
 
     def heuristic(self, current_dir, goal_dir):
         """Heuristic based solely on the difference in file counts"""
@@ -105,9 +95,24 @@ class AStar:
         timer_thread = None
         if self.run_time_min > 0:
             self.start_time = datetime.now()
-            timer_thread = threading.Thread(target=self.timer)
+            timer_thread = threading.Thread(target=timer, args=(self.start_time, self.run_time_min, self.stop_event))
             timer_thread.daemon = True
             timer_thread.start()
+
+        if self.stop_event.is_set():
+                print("Time limit reached. Stopping the process.")
+                path = self._reconstruct_path(self.forward_parents, self.backward_parents, self.intersection_node)
+                print(f"Path: {path}")
+                results_in_file(
+                    path,
+                    self.target_found,
+                    time.perf_counter() - self.start_time,
+                    self.infected_nodes,
+                    self.infected_files,
+                    "A_Star",
+                    self.file_limit
+                )
+                return
 
         try:
             while self.open_set and not self.stop_event.is_set():

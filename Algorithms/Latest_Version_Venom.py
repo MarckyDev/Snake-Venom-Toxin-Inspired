@@ -1,15 +1,14 @@
 import heapq
 import os
-from os.path import normpath, abspath, samefile
-from pathlib import Path
+from os.path import normpath, abspath
+from datetime import datetime
 import random
 import time
 from heapq import heapify
+import threading
 
 from Utils.FileProcessing import FileProcessing
-from Utils.PathingUtil import reconstruct_path
-import threading
-from Utils.PathingUtil import file_limit_reached
+from Utils.PathingUtil import reconstruct_path, file_limit_reached, timer
 from Utils.Metrics import results_in_file
 
 
@@ -40,6 +39,9 @@ class SnakeVenom:
         self.infected_files = 0
         self.myo_count = 0
         self.neuro_count = 0
+
+
+        self.stop_event = threading.Event()
         self.start_time = time.perf_counter()
 
         self.seed = seed if seed != 0 or seed is not None else int(time.time() * 1000)
@@ -128,6 +130,29 @@ class SnakeVenom:
 
             print(f"Infected nodes:{self.infected_nodes}\n"
                   f"Infected files:{self.infected_files}\n")
+
+            # Start timer thread if time limit is set
+            timer_thread = None
+            if self.run_time_min > 0:
+                self.start_time = datetime.now()
+                timer_thread = threading.Thread(target=timer, args=(self.start_time, self.run_time_min, self.stop_event))
+                timer_thread.daemon = True
+                timer_thread.start()
+            
+            if self.stop_event.is_set():
+                print("Time limit reached. Stopping the process.")
+                path = reconstruct_path(self.parent_map, self.starting_path, current_dir)
+                print(f"Path: {path}")
+                results_in_file(
+                    path,
+                    self.target_found,
+                    time.perf_counter() - self.start_time,
+                    self.infected_nodes,
+                    self.infected_files,
+                    "Snake_Venom_Latest_Version",
+                    self.file_limit
+                )
+                return
 
             if self.file_limit is not None:
                 for limit in self.file_limit:

@@ -1,8 +1,7 @@
 from datetime import datetime, time
 from os.path import normpath
 
-
-
+'''
 def reconstruct_path(parent_map, start, end):
     """Reconstruct the path from start to end using the parent map."""
     start = normpath(start)
@@ -26,6 +25,27 @@ def reconstruct_path(parent_map, start, end):
             raise KeyError(f"Node {path[-1]} not found in parent_map. Path reconstruction failed.") from e
 
     return path[::-1]
+'''
+
+def reconstruct_path(parent_map, start, end):
+    """Reconstruct path as a list, but memory-efficient for long paths."""
+    path = list(_reconstruct_path_generator(parent_map, start, end))
+    return path
+
+def _reconstruct_path_generator(parent_map, start, end):
+    """Helper generator for path reconstruction."""
+    start = normpath(start)
+    end = normpath(end)
+    if start == end:
+        yield start
+        return
+    if start not in parent_map or end not in parent_map:
+        raise ValueError("Start or end node not in parent_map.")
+    current = end
+    while current != start:
+        yield current
+        current = parent_map[current]
+    yield start
 
 
 def timer(start_time, max_run_time_min, stop_event):

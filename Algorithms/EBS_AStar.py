@@ -3,8 +3,9 @@ from os.path import normpath
 from pathlib import Path
 import datetime
 import time
+import threading
 from Utils.FileProcessing import FileProcessing
-from Utils.PathingUtil import file_limit_reached
+from Utils.PathingUtil import file_limit_reached, timer
 from Utils.Metrics import results_in_file
 
 
@@ -21,16 +22,12 @@ class EBSAStar:
         self.blocked_directories = set()
         self.processed_files = set()
         self.target_file = target_file
+        self.forward_parents = {}
+        self.backward_parents = {}
+        self.intersection_node = None
 
-        # Timer-related attributes (now direct)
+        self.stop_event = threading.Event()
         self.start_time = time.perf_counter()
-
-    def _has_timed_out(self):
-        """Check if the runtime limit has been reached."""
-        if self.run_time_min <= 0:
-            return False
-        elapsed_time = time.perf_counter() - self.start_time
-        return elapsed_time >= self.run_time_min * 60
 
     def _infect_directory(self, dir_path):
         """Accurate file counting with deduplication"""
@@ -133,8 +130,8 @@ class EBSAStar:
     def ebs_astar(self):
         """Enhanced Bidirectional A* Search with built-in timeout"""
         current_dir = normpath(self.current_dir)
-        path = None  # Initialize path outside the loop
-        search_successful = False
+        path = self._reconstruct_path(self.forward_parents, self.backward_parents, self.intersection_node)
+        self.target_found = False
         # Initialize data structures
         start_node = (current_dir, 0,
                       self.heuristic(FileProcessing().count_files_in_directory(current_dir),
@@ -147,12 +144,36 @@ class EBSAStar:
         OPEN_LIST_2 = [goal_node]
         CLOSE_LIST_1 = set()
         CLOSE_LIST_2 = set()
-        forward_parents = {current_dir: None}
-        backward_parents = {self.ending_path: None}
+        self.forward_parents = {current_dir: None}
+        self.backward_parents = {self.ending_path: None}
 
         intersection_node = None
 
         while OPEN_LIST_1 and OPEN_LIST_2:
+            # Check if the runtime limit has been reached
+            # Start timer thread if time limit is set
+            timer_thread = None
+            if self.run_time_min > 0:
+                self.start_time = datetime.now()
+                timer_thread = threading.Thread(target=timer, args=(self.start_time, self.run_time_min, self.stop_event))
+                timer_thread.daemon = True
+                timer_thread.start()
+            
+            if self.stop_event.is_set():
+                print("Time limit reached. Stopping the process.")
+                path = self._reconstruct_path(self.forward_parents, self.backward_parents, self.intersection_node)
+                print(f"Path: {path}")
+                results_in_file(
+                    path,
+                    self.target_found,
+                    time.perf_counter() - self.start_time,
+                    self.infected_nodes,
+                    self.infected_files,
+                    "Enhanced_BiDirectional_A_Search",
+                    self.file_limit
+                )
+                return
+            
             # Check file limit condition
             if self.file_limit:
                 for limit in self.file_limit:
@@ -181,7 +202,7 @@ class EBSAStar:
 
                 if current_s_node in CLOSE_LIST_2:
                     intersection_node = current_s_node
-                    path = self._reconstruct_path(forward_parents, backward_parents, intersection_node)
+                    path = self._reconstruct_path(self.forward_parents, self.backward_parents, self.intersection_node)
                     if self.validate_path(path):
                         self.target_found = True
                         # Check file limit after finding a valid path
@@ -200,7 +221,7 @@ class EBSAStar:
                                     self.logged_limits.append(limit)
                         break  # Exit after finding a path
 
-                self.search(current_s_node, OPEN_LIST_1, CLOSE_LIST_1, self.ending_path, True, forward_parents)
+                self.search(current_s_node, OPEN_LIST_1, CLOSE_LIST_1, self.ending_path, True, self.forward_parents)
 
             # Backward search
             if OPEN_LIST_2:
@@ -211,13 +232,13 @@ class EBSAStar:
 
                 if current_e_node in CLOSE_LIST_1:
                     intersection_node = current_e_node
-                    path = self._reconstruct_path(forward_parents, backward_parents, intersection_node)
+                    path = self._reconstruct_path(self.forward_parents, self.backward_parents, intersection_node)
                     if self.validate_path(path):
                         self.target_found = True
                         search_successful = True
                         break  # Exit the while loop upon finding a path
 
-                self.search(current_e_node, OPEN_LIST_2, CLOSE_LIST_2, current_dir, False, backward_parents)
+                self.search(current_e_node, OPEN_LIST_2, CLOSE_LIST_2, current_dir, False, self.backward_parents)
 
         # Log results after the search loop finishes
         results_in_file(
@@ -268,21 +289,24 @@ class EBSAStar:
         return smoothed
 
     def _reconstruct_path(self, forward_parents, backward_parents, intersection):
-        """Reconstruct the complete path from both directions"""
-        forward_path = []
+        """Reconstruct the complete path from both directions and return it as a list."""
+        # Reconstruct forward path
         current = intersection
+        forward_path = []
         while current is not None:
             forward_path.append(current)
             current = forward_parents.get(current)
         forward_path.reverse()
 
+        # Reconstruct backward path
         backward_path = []
-        current = intersection
+        current = backward_parents.get(intersection)
         while current is not None:
             backward_path.append(current)
             current = backward_parents.get(current)
 
-        full_path = forward_path + backward_path[1:] if backward_path else forward_path
+        # Combine forward and backward paths
+        full_path = forward_path + backward_path
         return full_path
 
     def validate_path(self, path):

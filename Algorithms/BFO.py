@@ -1,3 +1,4 @@
+from hmac import new
 import random
 import os
 from os.path import normpath, join, isfile, dirname
@@ -6,7 +7,7 @@ import threading
 import datetime
 
 from Utils.FileProcessing import FileProcessing
-from Utils.PathingUtil import file_limit_reached
+from Utils.PathingUtil import file_limit_reached, reconstruct_path, timer
 from Utils.Metrics import results_in_file
 
 
@@ -35,16 +36,6 @@ class BacterialForaging:
         # Timer-related attributes
         self.stop_event = threading.Event()
         self.start_time = time.perf_counter()
-
-    def timer(self):
-        """Monitor elapsed time and set stop_event when time limit is reached"""
-        while not self.stop_event.is_set():
-            elapsed = datetime.now() - self.start_time
-            if elapsed.total_seconds() >= self.run_time_min * 60:
-                self.stop_event.set()
-                print(f"Timeout: Reached {self.run_time_min} minute limit")
-                break
-            time.sleep(1)
 
     def initialize_bacteria(self, start_dir, num_bacteria=10):
         """Initialize bacteria population at starting directory"""
@@ -241,19 +232,9 @@ class BacterialForaging:
                     if accessible:
                         new_pos = random.choice(accessible)
                         self.bacteria[i]['position'] = new_pos
-                        self.bacteria[i]['path'] = self.reconstruct_path(new_pos)
+                        self.bacteria[i]['path'] = reconstruct_path(self.parent_map,new_pos, new_pos)
                         self.bacteria[i]['depth'] = len(self.bacteria[i]['path']) - 1
                 self.bacteria[i]['health'] = 100
-
-    def reconstruct_path(self, end_node):
-        """Reconstruct path from start to end using parent_map"""
-        path = []
-        current = normpath(end_node)
-        while current is not None:
-            path.append(current)
-            current = self.parent_map.get(current, None)
-        return path[::-1]
-
     def run(self):
         """Main BFO algorithm with integrated timer"""
         self.initialize_bacteria(self.start_dir)
@@ -271,7 +252,19 @@ class BacterialForaging:
         try:
             if self.stop_event.is_set():
                 print("BFO algorithm stopping due to timeout")
-                return False
+                path = reconstruct_path(self.parent_map, self.start_dir, self.target_path)
+                print("im here")
+
+                results_in_file(
+                    path,
+                    found,
+                    time.perf_counter() - self.start_time,
+                    self.infected_nodes,
+                    self.infected_files,
+                    "Bacterial_Foraging_Optimization",
+                    self.file_limit
+                    )
+                return
 
             while not found and not self.stop_event.is_set():
                 steps += 1
@@ -284,7 +277,7 @@ class BacterialForaging:
                         # input("press Enter to continue...")
                         if limit not in self.logged_limits and file_limit_reached(self.infected_files, limit):
                             self.logged_limits.append(limit)
-                            path = self.reconstruct_path(self.target_path)
+                            path = reconstruct_path(self.parent_map, self.start_dir, self.target_path)
                             print("im here")
 
                             results_in_file(
@@ -335,7 +328,7 @@ class BacterialForaging:
         # Return results
         if self.best_path:
             path_display = os.path.sep.join(self.best_path)
-            path = self.reconstruct_path(self.target_path)
+            path = reconstruct_path(self.parent_map, self.start_dir, self.target_path)
 
             results_in_file(
                 path,

@@ -4,7 +4,7 @@ import threading
 import datetime
 import time
 from Utils.FileProcessing import FileProcessing
-from Utils.PathingUtil import reconstruct_path, file_limit_reached
+from Utils.PathingUtil import reconstruct_path, file_limit_reached, timer
 from Utils.Metrics import results_in_file
 
 
@@ -37,9 +37,24 @@ class Dijkstra:
         timer_thread = None
         if self.run_time_min > 0:
             self.start_time = datetime.now()
-            timer_thread = threading.Thread(target=self.timer)
+            timer_thread = threading.Thread(target=timer, args=(self.start_time, self.run_time_min, self.stop_event))
             timer_thread.daemon = True
             timer_thread.start()
+
+        if self.stop_event.is_set():
+            print("Time limit reached. Stopping the process.")
+            path = reconstruct_path(self.parent_map, self.starting_path, current_dir)
+            print(f"Path: {path}")
+            results_in_file(
+                path,
+                self.target_found,
+                time.perf_counter() - self.start_time,
+                self.infected_nodes,
+                self.infected_files,
+                "Dijkstra",
+                self.file_limit
+            )
+            return
 
         try:
             # Initialize data structures
