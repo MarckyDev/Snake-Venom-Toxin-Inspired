@@ -239,7 +239,7 @@ class BacterialForaging:
         """Main BFO algorithm with integrated timer"""
         self.initialize_bacteria(self.start_dir)
         found = False
-        steps = 0
+        steps = 10000  # Arbitrary large number of steps
 
         # Start timer thread if time limit is set
         timer_thread = None
@@ -266,8 +266,8 @@ class BacterialForaging:
                     )
                 return
 
-            while not found and not self.stop_event.is_set():
-                steps += 1
+            while not found and not self.stop_event.is_set() and steps != 0:
+                
 
                 if self.file_limit:
                     for limit in self.file_limit:
@@ -318,6 +318,7 @@ class BacterialForaging:
                 # Elimination and dispersal
                 if steps % 50 == 0:
                     self.elimination_dispersal(start_dir=self.start_dir)
+                steps -= 1
 
         finally:
             # Clean up timer thread
