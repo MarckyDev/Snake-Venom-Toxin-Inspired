@@ -68,6 +68,7 @@ class Dijkstra:
                 current = min(unvisited, key=lambda x: distances.get(x, float('inf')))
                 self.current = current
                 unvisited.remove(current)
+                
 
                 # Check file limit condition
                 if self.file_limit:

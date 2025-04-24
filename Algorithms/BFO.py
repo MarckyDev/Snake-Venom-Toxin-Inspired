@@ -7,7 +7,7 @@ import threading
 import datetime
 
 from Utils.FileProcessing import FileProcessing
-from Utils.PathingUtil import file_limit_reached, reconstruct_path, timer
+from Utils.PathingUtil import file_limit_reached, timer
 from Utils.Metrics import results_in_file
 
 
@@ -232,14 +232,14 @@ class BacterialForaging:
                     if accessible:
                         new_pos = random.choice(accessible)
                         self.bacteria[i]['position'] = new_pos
-                        self.bacteria[i]['path'] = reconstruct_path(self.parent_map,new_pos, new_pos)
+                        self.bacteria[i]['path'] = self.reconstruct_path(self.parent_map,new_pos, new_pos)
                         self.bacteria[i]['depth'] = len(self.bacteria[i]['path']) - 1
                 self.bacteria[i]['health'] = 100
     def run(self):
         """Main BFO algorithm with integrated timer"""
         self.initialize_bacteria(self.start_dir)
         found = False
-        steps = 10000  # Arbitrary large number of steps
+        steps = 100_000  # Arbitrary large number of steps for deeper exploration
 
         # Start timer thread if time limit is set
         timer_thread = None
@@ -248,11 +248,11 @@ class BacterialForaging:
             timer_thread = threading.Thread(target=self.timer)
             timer_thread.daemon = True
             timer_thread.start()
-
+        self.parent_map = {self.start_dir: None}
         try:
             if self.stop_event.is_set():
                 print("BFO algorithm stopping due to timeout")
-                path = reconstruct_path(self.parent_map, self.start_dir, self.target_path)
+                path = self.reconstruct_path(self.parent_map, self.start_dir, self.target_path) # Use the BFO version
                 print("im here")
 
                 results_in_file(
@@ -267,17 +267,28 @@ class BacterialForaging:
                 return
 
             while not found and not self.stop_event.is_set() and steps != 0:
-                
-
+                if steps == 1:
+                    path = self.reconstruct_path(self.parent_map, self.start_dir, self.target_path)
+                    
+                    results_in_file(
+                        path,
+                        found,
+                        time.perf_counter() - self.start_time,
+                        self.infected_nodes,
+                        self.infected_files,
+                        "Bacterial_Foraging_Optimization",
+                        self.file_limit
+                        )
                 if self.file_limit:
                     for limit in self.file_limit:
                         print(f"Infected files: {self.infected_files}"
+                              f"\n Steps: {steps}"
                               f"\nCurrent File limit: {limit}"
                               f"\nCurrent Logged Limits: {self.logged_limits}")
                         # input("press Enter to continue...")
                         if limit not in self.logged_limits and file_limit_reached(self.infected_files, limit):
                             self.logged_limits.append(limit)
-                            path = reconstruct_path(self.parent_map, self.start_dir, self.target_path)
+                            path = self.reconstruct_path(self.parent_map, self.start_dir, self.target_path)
                             print("im here")
 
                             results_in_file(
@@ -329,8 +340,8 @@ class BacterialForaging:
         # Return results
         if self.best_path:
             path_display = os.path.sep.join(self.best_path)
-            path = reconstruct_path(self.parent_map, self.start_dir, self.target_path)
-
+            path = self.reconstruct_path(self.parent_map, self.start_dir, self.target_path)
+            print("Found the best path!")
             results_in_file(
                 path,
                 found,
@@ -346,16 +357,23 @@ class BacterialForaging:
 
         return [path_display, self.infected_files, self.infected_nodes]
 
+    def _reconstruct_path_generator_bf(self, parent_map, start, end):
+        """
+        Generator function to reconstruct the path for BFO.
+        Traces back from 'end' to 'start' using the 'parent_map'.
+        """
+        current = end
+        while current != start:
+            if current not in parent_map:
+                raise ValueError("Start or end node not in parent_map.")
+            yield current
+            current = parent_map[current]
+        yield start
 
-
-    def update_metrics(self, start_time):
-        """Update global metrics with current state"""
-        elapsed = time.perf_counter() - start_time
-
-        # Show full path or searching indication
-        if self.best_path:
-            path_display = os.path.sep.join(self.best_path)
-        else:
-            path_display = f"Searching... (Depth: {self.search_depth})"
-
-        return self.infected_files, self.infected_nodes, path_display, elapsed
+    def reconstruct_path(self, parent_map, start, end):
+        """
+        Reconstructs the path from 'start' to 'end' for BFO using the parent map.
+        It uses a generator and returns the path as a list.
+        """
+        path = list(self._reconstruct_path_generator_bf(parent_map, start, end))
+        return path[::-1]
