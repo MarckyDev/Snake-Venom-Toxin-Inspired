@@ -21,6 +21,7 @@ class Dijkstra:
         self.current_dir = current_dir
         self.target_file = target_file
         self.ending_path = normpath(ending_path)
+        self.parent_map = {self.current_dir: None}
         self.current = None
         self.target_found = False
 
@@ -36,14 +37,13 @@ class Dijkstra:
         # Start timer thread if time limit is set
         timer_thread = None
         if self.run_time_min > 0:
-            self.start_time = datetime.now()
             timer_thread = threading.Thread(target=timer, args=(self.start_time, self.run_time_min, self.stop_event))
             timer_thread.daemon = True
             timer_thread.start()
 
         if self.stop_event.is_set():
             print("Time limit reached. Stopping the process.")
-            path = reconstruct_path(self.parent_map, self.starting_path, current_dir)
+            path = reconstruct_path(self.parent_map, self.current_dir, current_dir)
             print(f"Path: {path}")
             results_in_file(
                 path,
@@ -54,12 +54,17 @@ class Dijkstra:
                 "Dijkstra",
                 self.file_limit
             )
-            return
+            return [
+                    path,
+                    self.target_found,
+                    time.perf_counter() - self.start_time,
+                    self.infected_nodes,
+                    self.infected_files
+                ]
 
         try:
             # Initialize data structures
             distances = {current_dir: 0}  # Cost from start to node
-            parent_map = {current_dir: None}  # To reconstruct path
             visited = set()
             unvisited = {current_dir}
 
@@ -68,14 +73,13 @@ class Dijkstra:
                 current = min(unvisited, key=lambda x: distances.get(x, float('inf')))
                 self.current = current
                 unvisited.remove(current)
-                
 
                 # Check file limit condition
                 if self.file_limit:
                     for limit in self.file_limit:
                         if limit not in self.logged_limits and file_limit_reached(self.infected_files, limit):
                             self.logged_limits.append(limit)
-                            path = reconstruct_path(parent_map, current_dir, current)
+                            path = reconstruct_path(self.parent_map, current_dir, current)
                             results_in_file(
                                 path,
                                 self.target_found,
@@ -97,7 +101,7 @@ class Dijkstra:
                 # Check if target file is found
                 try:
                     if self.target_file in os.listdir(current):
-                        path = reconstruct_path(parent_map, current_dir, current)
+                        path = reconstruct_path(self.parent_map, current_dir, current)
                         self.target_found = True
 
                         results_in_file(
@@ -129,7 +133,7 @@ class Dijkstra:
                     # Update if we found a shorter path
                     if dir_name not in distances or new_distance < distances[dir_name]:
                         distances[dir_name] = new_distance
-                        parent_map[dir_name] = current
+                        self.parent_map[dir_name] = current
                         unvisited.add(dir_name)
 
                     # Count files in this directory
@@ -143,8 +147,8 @@ class Dijkstra:
 
                 # Add parent directory as fallback
                 parent_dir = normpath(os.path.dirname(current))
-                if parent_dir != current and parent_dir not in parent_map:
-                    parent_map[parent_dir] = current
+                if parent_dir != current and parent_dir not in self.parent_map:
+                    self.parent_map[parent_dir] = current
                     unvisited.add(parent_dir)
                     distances[parent_dir] = distances[current] + 1  # Standard cost for parent traversal
 
@@ -155,4 +159,4 @@ class Dijkstra:
                 timer_thread.join()
 
             # If target not found, return path to last visited directory
-            return [reconstruct_path(parent_map, current_dir, self.current), self.infected_files, self.infected_nodes]
+            return [reconstruct_path(self.parent_map, current_dir, self.current), self.infected_files, self.infected_nodes]

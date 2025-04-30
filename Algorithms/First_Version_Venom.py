@@ -49,14 +49,12 @@ class SnakeVenom:
 
     @staticmethod
     def diffusion_coefficient_calculation(visited):
-        """Calculate the diffusion coefficient based on visited nodes."""
         if visited == 0:
             return 0
         return (visited / 100 + math.log(visited)) * random.uniform(-0.05, 0.05)
 
     @staticmethod
     def diffusion_flux(diffusion_coefficient, current_node_value, neighbor_node_value, concentration=1):
-        """Calculate the diffusion flux between nodes."""
         displacement = current_node_value - neighbor_node_value
         if displacement == 0:
             return 0
@@ -122,7 +120,6 @@ class SnakeVenom:
             # Start timer thread if time limit is set
             timer_thread = None
             if self.run_time_min > 0:
-                self.start_time = datetime.now()
                 timer_thread = threading.Thread(target=timer, args=(self.start_time, self.run_time_min, self.stop_event))
                 timer_thread.daemon = True
                 timer_thread.start()
@@ -139,7 +136,13 @@ class SnakeVenom:
                             "First_Version_Venom",
                             self.file_limit
                         )
-                return
+                return [
+                    path,
+                    self.target_found,
+                    time.perf_counter() - self.start_time,
+                    self.infected_nodes,
+                    self.infected_files
+                ]
 
             if self.file_limit:
                 print(self.file_limit)

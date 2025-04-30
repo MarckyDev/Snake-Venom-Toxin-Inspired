@@ -117,7 +117,6 @@ class SnakeVenom:
             # Start timer thread if time limit is set
             timer_thread = None
             if self.run_time_min > 0:
-                self.start_time = datetime.now()
                 timer_thread = threading.Thread(target=timer, args=(self.start_time, self.run_time_min, self.stop_event))
                 timer_thread.daemon = True
                 timer_thread.start()
@@ -135,7 +134,13 @@ class SnakeVenom:
                     "Second_Version_Venom",
                     self.file_limit
                 )
-                return
+                return [
+                    path,
+                    self.target_found,
+                    time.perf_counter() - self.start_time,
+                    self.infected_nodes,
+                    self.infected_files
+                ]
 
             if self.file_limit:
                 print(self.file_limit)
