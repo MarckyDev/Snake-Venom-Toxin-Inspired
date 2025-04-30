@@ -217,7 +217,13 @@ class EBSAStar:
                     "Enhanced_BiDirectional_A_Search",
                     self.file_limit
                 )
-                return
+                return [
+                    path,
+                    self.target_found,
+                    time.perf_counter() - self.start_time,
+                    self.infected_nodes,
+                    self.infected_files
+                ]
             
             # Check file limit condition
             if self.file_limit:
@@ -309,7 +315,13 @@ class EBSAStar:
             "Enhanced_BiDirectional_A_Search",
             self.file_limit
         )
-        return [path, self.infected_files, self.infected_nodes]
+        return [
+                path,
+                self.target_found,
+                time.perf_counter() - self.start_time,
+                self.infected_nodes,
+                self.infected_files
+                ]
 
     def has_direct_connection(self, node1, node2):
         """Check if two nodes are directly connected (parent-child or share grandparent)"""

@@ -1,4 +1,4 @@
-from datetime import datetime, time
+import time
 from os.path import normpath
 
 '''
@@ -50,8 +50,8 @@ def _reconstruct_path_generator(parent_map, start, end):
 
 def timer(start_time, max_run_time_min, stop_event):
     while not stop_event.is_set():
-        elapsed = datetime.now() - start_time
-        if elapsed.total_seconds() >= max_run_time_min * 60:
+        elapsed = time.perf_counter() - start_time
+        if elapsed >= max_run_time_min * 60:
             stop_event.set()
             print(f"Time limit of {max_run_time_min} minutes reached. Stopping...")
             break

@@ -119,97 +119,145 @@ if __name__ == "__main__":
         DIJKSTRA.run_time_min = RUN_TIME
         BACTERIA.run_time_min = RUN_TIME
 
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+
+    infected_nodes = []
+    infected_files = []
+
     for algo in ALGOS:
         match algo:
             case "SVT":
                 print("Starting.. First Version of Snake Venom (SVT-Vanilla)")
                 SNAKE_VENOM_FIRST.run_time_min = RUN_TIME
                 first_svt = time_algorithm(SNAKE_VENOM_FIRST.svt_a)
+
+                infected_files.append(first_svt[1][4])
+                infected_nodes.append(first_svt[1][3])
+                time.sleep(10)
             case "SVT_A":
                 print("Starting.. Second Version of Snake Venom (SVT-A)")
                 SNAKE_VENOM_SECOND.run_time_min = RUN_TIME
                 second_svt = time_algorithm(SNAKE_VENOM_SECOND.svt_a)
+
+                infected_files.append(second_svt[1][4])
+                infected_nodes.append(second_svt[1][3])
+                time.sleep(10)
             case "SVT_B":
                 print("Starting.. Current Version of Snake Venom (SVT - B)")
                 SNAKE_VENOM_LATEST.run_time_min = RUN_TIME
                 latest_svt = time_algorithm(SNAKE_VENOM_LATEST.new_svt_a)
+
+                infected_files.append(latest_svt[1][4])
+                infected_nodes.append(latest_svt[1][3])
+                time.sleep(10)
             case "SVT_C":
                 print("Starting.. Memory Based Learning of Snake Venom (SVT - C)")
                 SNAKE_VENOM_LEARNING.run_time_min = RUN_TIME
                 learning_svt = time_algorithm(SNAKE_VENOM_LEARNING.new_svt_a)
+
+                infected_files.append(learning_svt[1][4])
+                infected_nodes.append(learning_svt[1][3])
+                time.sleep(10)
             case "A_Star":
                 print("Starting.. A Star")
                 A_STAR.run_time_min = RUN_TIME
                 a_results = time_algorithm(A_STAR.a_star)
+
+                infected_files.append(a_results[1][4])
+                infected_nodes.append(a_results[1][3])
+                time.sleep(10)
             case "Dijkstra":
                 print("Starting.. Dijkstra")
                 DIJKSTRA.run_time_min = RUN_TIME
                 d_results = time_algorithm(DIJKSTRA.dijkstra)
+
+                infected_files.append(d_results[1][4])
+                infected_nodes.append(d_results[1][3])
+                time.sleep(10)
             case "BFO":
                 print("Starting.. BFO")
                 BACTERIA.run_time_min = RUN_TIME
                 b_results = time_algorithm(BACTERIA.run)
+
+                infected_files.append(b_results[1][4])
+                infected_nodes.append(b_results[1][3])
+                time.sleep(10)
             case "EBS":
                 print("Starting.. EBS A Star")
                 EBS.run_time_min = RUN_TIME
                 ebs_results = time_algorithm(EBS.ebs_astar)
+
+                infected_files.append(ebs_results[1][4])
+                infected_nodes.append(ebs_results[1][3])
+                time.sleep(10)
             case "all":
                 print("Starting.. EBS A Star")
-                time.sleep(5)
+                time.sleep(10)
                 ebs_results = time_algorithm(EBS.ebs_astar)
 
                 print("Starting.. First Version of Snake Venom")
-                time.sleep(5)
+                time.sleep(10)
                 first_svt = time_algorithm(SNAKE_VENOM_FIRST.svt_a)
                 
                 print("Starting.. Second Version of Snake Venom")
-                time.sleep(5)
+                time.sleep(10)
                 second_svt = time_algorithm(SNAKE_VENOM_SECOND.svt_a)
                 
                 print("Starting.. Current Version of Snake Venom")
-                time.sleep(5)
+                time.sleep(10)
                 latest_svt = time_algorithm(SNAKE_VENOM_LATEST.new_svt_a)
                 
                 print("Starting.. Memory Based Learning of Snake Venom")
-                time.sleep(5)
+                time.sleep(10)
                 learning_svt = time_algorithm(SNAKE_VENOM_LEARNING.new_svt_a)
                 #
                 print("Starting.. A Star")
-                time.sleep(5)
+                time.sleep(10)
                 a_results = time_algorithm(A_STAR.a_star)
                 
                 print("Starting.. Dijkstra")
-                time.sleep(5)
+                time.sleep(10)
                 d_results = time_algorithm(DIJKSTRA.dijkstra)
                 
                 print("Starting.. BFO")
-                time.sleep(5)
+                time.sleep(10)
                 b_results = time_algorithm(BACTERIA.run)
+                
+
+                infected_files.append(first_svt[1][4])
+                infected_nodes.append(first_svt[1][3])
+                infected_files.append(second_svt[1][4])
+                infected_nodes.append(second_svt[1][3])
+                infected_files.append(latest_svt[1][4])
+                infected_nodes.append(latest_svt[1][3])
+                infected_files.append(learning_svt[1][4])
+                infected_nodes.append(learning_svt[1][3])
+                infected_files.append(a_results[1][4])
+                infected_nodes.append(a_results[1][3])
+                infected_files.append(d_results[1][4])
+                infected_nodes.append(d_results[1][3])
+                infected_files.append(ebs_results[1][4])
+                infected_nodes.append(ebs_results[1][3])
+                infected_files.append(b_results[1][4])
+                infected_nodes.append(b_results[1][3])
+                
             case _:
                 print("Invalid algorithm specified. Please choose from the available algorithms.")
                 continue
         
 
-        results = {
-        "first_svt": first_svt if 'first_svt' in locals() else None,
-        "second_svt": second_svt if 'second_svt' in locals() else None,
-        "latest_svt": latest_svt if 'latest_svt' in locals() else None,
-        "learning_svt": learning_svt if 'learning_svt' in locals() else None,
-        "a_results": a_results if 'a_results' in locals() else None,
-        "d_results": d_results if 'd_results' in locals() else None,
-        "b_results": b_results if 'b_results' in locals() else None,
-        "ebs_results": ebs_results if 'ebs_results' in locals() else None,
-        }
-        
 
-        print("Algorithm completed.")
-        print("Results:")
-        for name, value in results.items():
-            if value is not None:
-                print(f"{name}: {value}")
-            else:
-                print(f"{name}: Not available")
-
-        print("All algorithms completed.")
+    plt.bar(ALGOS, infected_files, width=0.3)
+    plt.title('Infected Files of the Algorithms in a set time')
+    plt.xlabel('Algorithms')
+    plt.ylabel('Infected Files')
+    plt.show()
 
 
+    plt.bar(ALGOS, infected_nodes, width=0.3)
+    plt.title('Infected Files of the Algorithms in a set time')
+    plt.xlabel('Algorithms')
+    plt.ylabel('Infected Nodes')
+    plt.show()
