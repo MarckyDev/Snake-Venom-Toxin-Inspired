@@ -1,12 +1,11 @@
-from datetime import datetime
+
 from Algorithms import First_Version_Venom, Second_Version_Venom, Latest_Version_Venom, Learning_Snake_Venom
 from Algorithms import BFO, AStar, EBS_AStar, Dijkstra
 from Utils.Metrics import time_algorithm
 import os
 import time
 import argparse
-import json
-import matplotlib.pyplot as plt
+
 
 parser = argparse.ArgumentParser(description="Snake Venom Algorithm")
 
@@ -34,57 +33,6 @@ parser.add_argument("-alg", "--algorithm",
                     metavar="algorithm",
                     default="all")
 
-parser.add_argument("-plt", "--matplotlib",
-                    help="An algorithm to run. The default value is all algorithms",
-                    default="false")
-
-def has(target_string: str, required_chars: str) -> bool:
-    """Checks if the target string contains the required characters."""
-    return required_chars in target_string
-
-
-
-def save_results_to_json(results_data, filename=None):
-    """Save the results to a JSON file with timestamp if no filename is provided."""
-    if filename is None:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"algorithm_results_{timestamp}.json"
-    
-    with open(filename, 'w') as f:
-        json.dump(results_data, f, indent=4)
-    
-    print(f"Results saved to {filename}")
-    return filename
-
-def load_results_from_json(filename):
-    """Load results from a JSON file."""
-    with open(filename, 'r') as f:
-        return json.load(f)
-
-def plot_results_from_data(results_data):
-    """Plot results from the loaded data."""
-    algorithm_names = list(results_data.keys())
-    infected_nodes = [results_data[algo]['infected_nodes'] for algo in algorithm_names]
-    infected_files = [results_data[algo]['infected_files'] for algo in algorithm_names]
-    
-    plt.figure(figsize=(12, 6))
-    
-    plt.subplot(1, 2, 1)
-    plt.bar(algorithm_names, infected_files, width=0.3)
-    plt.title('Infected Files by Algorithm')
-    plt.xlabel('Algorithms')
-    plt.ylabel('Number of Files')
-    plt.xticks(rotation=45)
-    
-    plt.subplot(1, 2, 2)
-    plt.bar(algorithm_names, infected_nodes, width=0.3)
-    plt.title('Infected Nodes by Algorithm')
-    plt.xlabel('Algorithms')
-    plt.ylabel('Number of Nodes')
-    plt.xticks(rotation=45)
-    
-    plt.tight_layout()
-    plt.show()
 
 if __name__ == "__main__":
     # Parse arguments
@@ -96,10 +44,7 @@ if __name__ == "__main__":
     TARGET_FILE = arguments.targetfile
     RUN_TIME = arguments.runtime
     ALGOS = arguments.algorithm if isinstance(arguments.algorithm, list) else [arguments.algorithm]
-    MATPLOTLIB = arguments.matplotlib
-
-    if MATPLOTLIB == True:
-        load_results_from_json
+    
     print(f"Starting path: {STARTING_PATH}")
     print(f"Target path: {TARGET_PATH}")
     print(f"Target file: {TARGET_FILE}")
@@ -131,7 +76,6 @@ if __name__ == "__main__":
     infected_nodes = []
     infected_files = []
     algorithm_names = []
-    results_data = {}
 
     # Run selected algorithms
     if "all" in ALGOS:
@@ -172,12 +116,3 @@ if __name__ == "__main__":
         
         print(f"Completed {algo_name}: {timed_result}")
         time.sleep(10)  # Cooldown between algorithms
-        results_data[algo_name] = {
-            'time_taken': timed_result[0],
-            'infected_nodes': timed_result[1][3],
-            'infected_files': timed_result[1][4],
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-
-        # Save results to JSON file
-        json_filename = save_results_to_json(results_data)
