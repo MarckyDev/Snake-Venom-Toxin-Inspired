@@ -8,9 +8,9 @@ This algorithm is applied in the context of penetration testing, in which it tra
 
 This repository is a collection of benchmarked algorithms used for testing of VIPER. the scripts will create a file of results from every algorithm within the script's directory.
 
-### How to Use this?
+## How to Use this?
 
-## The following are the Arguments 
+### The following are the Arguments 
 ```
 [-sp] StartDirectoryPath: Optional => by default, this is the current directory where the main.py script is located. It can also be an absolute path to a directory
 
