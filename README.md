@@ -1,6 +1,6 @@
 
 ## Description
-**Venom-Inspired Pathfinding Enhancement of A staR (VIPER)**
+**Venom-Inspired Pathfinding Enhancement of A* (VIPER)**
 
 An algorithm based on the dynamic movement of snake venom within a living organism that is inflicted by it. Using diffusion flux as the main heuristic will mimic how the snake venom moves inside an organism, with a decreasing concentration value affected by time. 
 
