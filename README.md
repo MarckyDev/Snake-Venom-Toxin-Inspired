@@ -1,14 +1,16 @@
 
 ## Description
-**Snake Venom Toxin Inspired A* Algorithm (SVT-A*)**
+**Venom-Inspired Pathfinding Enhancement of A staR (VIPER)**
 
-An algorithm based on the dynamic movement of snake venom within a living organism that is inflicted by it. Using diffusion flux as the main heuristic,it will mimic how the snake venom moves inside an organism, with a decreasing concentration value affected by time. 
+An algorithm based on the dynamic movement of snake venom within a living organism that is inflicted by it. Using diffusion flux as the main heuristic will mimic how the snake venom moves inside an organism, with a decreasing concentration value affected by time. 
 
-This algorithm is applied in the context of penetration testing, in which it traverses the file directories of your machine and tries to find a path between two directories. This algorithm is made for a Bachelor's thesis. Feel free to improve or use this algorithm in other use cases.
+This algorithm is applied in the context of penetration testing, in which it traverses the file network of your machine and tries to find a path between two directories. This algorithm is made for a Bachelor's thesis. Feel free to improve or use this algorithm in other use cases.
 
-## How to Use this?
+This repository is a collection of benchmarked algorithms used for testing of VIPER. the scripts will create a file of results from every algorithm within the script's directory.
 
-### The following are the Arguments 
+### How to Use this?
+
+## The following are the Arguments 
 ```
 [-sp] StartDirectoryPath: Optional => by default, this is the current directory where the main.py script is located. It can also be an absolute path to a directory
 
