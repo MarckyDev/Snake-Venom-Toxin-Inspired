@@ -1,10 +1,3 @@
-## Library Dependencies
-- pathlib
-- heapq
-- os
-- random
-
-Note: These libraries are local to your Python interpreter; you only have to import them directly.
 
 ## Description
 **Snake Venom Toxin Inspired A* Algorithm (SVT-A*)**
@@ -26,8 +19,9 @@ This algorithm is applied in the context of penetration testing, in which it tra
 [-alg] Algorithms: Optional => The default option is "all" it contains a list of algorithms that you can run.
 ```
 
+Clone the repository
 ```
-git pull https://github.com/MarckyDev/Snake-Venom-Toxin-Inspired.git
+git clone https://github.com/MarckyDev/Snake-Venom-Toxin-Inspired.git
 ```
 
 You may opt-out on using the "-sp" command
