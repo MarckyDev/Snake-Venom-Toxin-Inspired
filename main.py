@@ -56,10 +56,10 @@ if __name__ == "__main__":
 
     # Initialize all algorithms
     algorithms = {
-        "SVT": First_Version_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits),
-        "SVT_A": Second_Version_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits),
-        "SVT_B": Latest_Version_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits),
-        "SVT_C": Learning_Snake_Venom.SnakeVenom(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits),
+        "VIPER": First_Version_Venom.VIPER(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits),
+        "MkI": Second_Version_Venom.VIPER_Mk_I(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits),
+        "MkII": Latest_Version_Venom.VIPER_Mk_II(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits),
+        "MkIII": Learning_Snake_Venom.VIPER_Mk_III(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits),
         "A_Star": AStar.AStar(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits),
         "EBS": EBS_AStar.EBSAStar(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits),
         "Dijkstra": Dijkstra.Dijkstra(STARTING_PATH, TARGET_PATH, TARGET_FILE, file_limit=file_Limits),
@@ -88,14 +88,14 @@ if __name__ == "__main__":
         algo = algorithms[algo_name]
         
         # Determine which method to call based on algorithm
-        if algo_name == "SVT":
-            method = algo.svt_a
-        elif algo_name == "SVT_A":
-            method = algo.svt_a
-        elif algo_name == "SVT_B":
-            method = algo.new_svt_a
-        elif algo_name == "SVT_C":
-            method = algo.new_svt_a
+        if algo_name == "VIPER":
+            method = algo.viper
+        elif algo_name == "MkI":
+            method = algo.mk_i
+        elif algo_name == "MkII":
+            method = algo.mk_ii
+        elif algo_name == "MkIII":
+            method = algo.mk_iii
         elif algo_name == "A_Star":
             method = algo.a_star
         elif algo_name == "EBS":

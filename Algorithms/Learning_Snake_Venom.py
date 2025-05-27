@@ -12,7 +12,7 @@ from Utils.PathingUtil import file_limit_reached, timer
 from Utils.Metrics import results_in_file
 
 
-class SnakeVenom:
+class VIPER_Mk_III:
     def __init__(self, starting_path, ending_path, target_file, seed=0, file_limit=None, run_time_min=0):
         self.file_limit = file_limit
         self.run_time_min = run_time_min
@@ -114,7 +114,7 @@ class SnakeVenom:
                 break  # Should not happen in a properly executed search
         return list(reversed(path))
 
-    def new_svt_a(self):
+    def mk_iii(self):
         """
         Returns:
         - Path
